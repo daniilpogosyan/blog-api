@@ -109,6 +109,14 @@ router.delete('/:postId', async (req, res, next) => {
 });
 
 // User a separate router for comments
-router.use('/:postId/comments', commentRouter);
+router.use('/:postId/comments',
+  // Save postId inside request for use in comment router 
+  // since :postId param will not be abailable in other route
+  (req, res, next) => {
+    req.postId = req.params.postId
+    next();
+  },
+  commentRouter
+);
 
 module.exports = router;
