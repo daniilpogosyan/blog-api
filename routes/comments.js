@@ -11,7 +11,7 @@ const User = require('../models/user');
 router.get('/', async (req, res, next) => {
   let comments;
   try {
-    comments = await Comment.find({post: req.postId}).exec();
+    comments = await Comment.find({post: req.postId}).populate('author', 'username').exec();
   } catch (err) {
     next(err);
   }
@@ -69,7 +69,7 @@ router.post('/', async (req, res, next) => {
 router.get('/:commentId', async (req, res, next) => {
   let comment;
   try {
-    comment = await Comment.findById(req.params.commentId);
+    comment = await Comment.findById(req.params.commentId).populate('author', 'username');
   } catch (err) {
     return next(err);
   }
