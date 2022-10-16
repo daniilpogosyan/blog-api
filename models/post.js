@@ -24,6 +24,13 @@ const PostSchema = new mongoose.Schema({
     required: true,
     default: 'unpublished'
   }
-}, { timestamps: true });
+}, {
+  timestamps: true,
+  toJSON: {virtuals: true},
+});
+
+PostSchema.virtual('url').get(function() {
+  return `/posts/${this.id}`;
+})
 
 module.exports = mongoose.model('Post', PostSchema);
