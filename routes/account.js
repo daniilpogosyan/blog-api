@@ -5,8 +5,14 @@ const jwt = require('jsonwebtoken');
 const createHttpError = require('http-errors');
 
 const User = require('../models/user');
+const authorize = require('../authentication/authorize');
 
 const router = express.Router();
+
+// Send data about user
+router.get('/', authorize, (req, res, next) => {
+  res.json(req.user)
+});
 
 router.post('/signup', async (req, res, next) => {
   const salt = await bcrypt.genSalt();
