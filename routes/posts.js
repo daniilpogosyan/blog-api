@@ -7,6 +7,8 @@ const commentRouter = require('./comments');
 const Post = require('../models/post');
 const User = require('../models/user');
 
+const authorize = require('../authentication/authorize');
+
 // Get all posts
 router.get('/', async (req, res, next) => {
   let posts;
@@ -20,25 +22,16 @@ router.get('/', async (req, res, next) => {
 });
 
 // Create a new post
-router.post('/', async (req, res, next) => {
-  // Find the author of the post
-  let user;
-  try {
-    // Use mock mock user until authentication is implemented
-    user = await User.findOne({username: 'testuser'}).exec();
-  } catch (err) {
+router.post('/', authorize, async (req, res, next) => {
+  if (!req.user.permissions.includes('write-post')) {
+    const err = createHttpError(403, 'User are not allowed to write posts');
     return next(err);
-  }
-
-  if (user === null)  {
-    const error = createError(404, 'User does not exist');
-    return next(error);
   }
 
   const leanPost = {
     title: req.body.title,
     body: req.body.body,
-    author: user
+    author: req.user
   };
 
   let post;
