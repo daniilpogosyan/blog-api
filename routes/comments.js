@@ -7,6 +7,8 @@ const Post = require('../models/post');
 const Comment = require('../models/comment');
 const User = require('../models/user');
 
+const authorize = require('../authentication/authorize');
+
 // Get all comments
 router.get('/', async (req, res, next) => {
   let comments;
@@ -20,7 +22,12 @@ router.get('/', async (req, res, next) => {
 });
 
 // // Create a new comment
-router.post('/', async (req, res, next) => {
+router.post('/', authorize, async (req, res, next) => {
+  if (!req.user.permissions.includes('write-comment')) {
+    const err = createError(403, 'You are not allowed to write comments');
+    return next(err);
+  }
+
   // Check if post that comment is written to exists
   let post;
   try {
@@ -34,25 +41,11 @@ router.post('/', async (req, res, next) => {
     return next(err);
   }
 
-  let user;
-  try {
-    // Use mock mock user until authentication is implemented
-    user = await User.findOne({ username: 'commentator' });
-  } catch (err) {
-    return next(err);
-  }
-
-  if (user === null) {
-    const err = createError(404, 'User does not exist');
-    next(err);
-  }
-
-
   // Create the comment
   let comment;
   const leanComment = {
     post: post,
-    author: user,
+    author: req.user,
     body: req.body.body
   };
 
