@@ -19,6 +19,7 @@ async function authorize(req, res, next) {
     decoded = jwt.verify(token, process.env.JWT_SECRET);
     console.log(decoded)
   } catch (err) {
+    err.status = 401;
     return next(err);
   }
 
