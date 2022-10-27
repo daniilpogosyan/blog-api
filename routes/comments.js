@@ -7,7 +7,7 @@ const Post = require('../models/post');
 const Comment = require('../models/comment');
 const User = require('../models/user');
 
-const authorize = require('../authentication/authorize');
+const { authorize } = require('../accessController');
 
 // Get all comments
 router.get('/', async (req, res, next) => {

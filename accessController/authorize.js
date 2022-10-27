@@ -1,4 +1,3 @@
-require('dotenv');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const createHttpError = require('http-errors');
@@ -9,6 +8,11 @@ async function authorize(req, res, next) {
   // Authorization header value schema: `Bearer ${token}`
   // e.i "Bearer 12312d1c21f12f....1d12d534fs"
   const bearerToken = req.header('Authorization');
+
+  if (!bearerToken) {
+    const err = createHttpError(401, 'Bearer token is not provided');
+    return next(err);
+  }
 
   // Get the token value itself
   const token = bearerToken.split(' ')[1];
@@ -36,6 +40,7 @@ async function authorize(req, res, next) {
     return next(err);
   }
 
+  // authorization is successful
   req.user = user;
   next();
 }

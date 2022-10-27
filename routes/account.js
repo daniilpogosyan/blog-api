@@ -1,11 +1,9 @@
-require('dotenv').config();
 const express = require('express');
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 const createHttpError = require('http-errors');
 
 const User = require('../models/user');
-const authorize = require('../authentication/authorize');
+const { authorize, issueJwt } = require('../accessController');
 
 const router = express.Router();
 
@@ -51,17 +49,7 @@ router.post('/login', async (req, res, next) => {
     return next(err);
   }
   
-  // signature and token creating 
-  const payload = {
-    id: user.id
-  };
-
-  const signingOptions = {
-    algorithm: 'HS256',
-    expiresIn: '1d',
-  };
-
-  const token = jwt.sign(payload, process.env.JWT_SECRET, signingOptions);
+  const token = issueJwt({ id: user.id });
   res.json(token);
 });
 
