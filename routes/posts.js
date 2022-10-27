@@ -65,7 +65,7 @@ router.get('/:postId', async (req, res, next) => {
 });
 
 // Update a particular post
-router.put('/:postId', async (req, res, next) => {
+router.put('/:postId', authorize, async (req, res, next) => {
   const updatedPostData = {
     title: req.body.title,
     body: req.body.body,
@@ -74,13 +74,20 @@ router.put('/:postId', async (req, res, next) => {
   
   let post;
   try {
-    post = await Post.findByIdAndUpdate(req.params.postId, updatedPostData).exec()
+    post = await Post.findById(req.params.postId).exec();
+    if (post === null) {
+      throw createError(404, 'Post does not exist');
+    }
+    
+    // Check if current user is author of the post
+    if (!post.author._id.equals(req.user.id)) {
+      throw createError(403, 'You do not have permission to edit this post');
+    }
+    
+    // Update post data
+    Object.assign(post, updatedPostData);
+    await post.save();
   } catch (err) {
-    return next(err);
-  }
-
-  if (post === null) {
-    const err = createError(404, 'Post does not exist');
     return next(err);
   }
 
