@@ -95,17 +95,27 @@ router.put('/:postId', authorize, async (req, res, next) => {
 });
 
 // Delete a particular post
-router.delete('/:postId', async (req, res, next) => {
+router.delete('/:postId', authorize, async (req, res, next) => {
   let post;
   try {
-    post = await Post.findByIdAndDelete(req.params.postId).exec();
+    post = await Post.findById(req.params.postId).exec();
+
+    if (post === null) {
+      throw createError(404, 'Post does not exist');
+    }
+
+    // Check if current user is author of the post
+    if (!post.author._id.equals(req.user._id)) {
+      throw createError(403, 'You do not have permission to delete this post');
+    }
   } catch (err) {
     return next(err);
   }
 
-  if (post === null) {
-    const err = createError(404, 'Post does not exist');
-    return next(err);
+  try {
+    await post.delete();
+  } catch (err) {
+    next(err);
   }
 
   res.send('Post is deleted');
