@@ -24,7 +24,7 @@ router.get('/', async (req, res, next) => {
 // Create a new post
 router.post('/', authorize, async (req, res, next) => {
   if (!req.user.permissions.includes('write-post')) {
-    const err = createHttpError(403, 'User are not allowed to write posts');
+    const err = createError(403, 'User are not allowed to write posts');
     return next(err);
   }
 
