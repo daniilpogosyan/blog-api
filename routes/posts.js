@@ -23,19 +23,19 @@ router.get('/', async (req, res, next) => {
 
 // Create a new post
 router.post('/', authorize, async (req, res, next) => {
-  if (!canUser(req.user, 'write-post')) {
-    const err = createError(403, 'User are not allowed to write posts');
-    return next(err);
-  }
-
-  const leanPost = {
-    title: req.body.title,
-    body: req.body.body,
-    author: req.user
-  };
-
   let post;
   try {
+    if (!canUser(req.user, 'write-post')) {
+      throw createError(403, 'User are not allowed to write posts');
+    }
+
+    // Extract data from request body
+    const leanPost = {
+      title: req.body.title,
+      body: req.body.body,
+      author: req.user
+    };
+
     post = await Post.create(leanPost);
   } catch (err) {
     return next(err);
@@ -52,13 +52,12 @@ router.get('/:postId', async (req, res, next) => {
       .findById(req.params.postId)
       .populate('author', 'username')
       .exec();
+
+    if (post === null)  {
+      throw createError(404, 'Post does not exist');
+    }
   } catch (err) {
     return next(err);
-  }
-  
-  if (post === null)  {
-    const error = createError(404, 'Post does not exist');
-    return next(error);
   }
 
   res.json(post);
@@ -66,24 +65,25 @@ router.get('/:postId', async (req, res, next) => {
 
 // Update a particular post
 router.put('/:postId', authorize, async (req, res, next) => {
-  const updatedPostData = {
-    title: req.body.title,
-    body: req.body.body,
-    status: req.body.status
-  };
-  
   let post;
   try {
+    // Check if current user is author of the post
+    if (!canUser(req.user, 'write-post', post)) {
+      throw createError(403, 'You do not have permission to edit this post');
+    }
+
     post = await Post.findById(req.params.postId).exec();
     if (post === null) {
       throw createError(404, 'Post does not exist');
     }
     
-    // Check if current user is author of the post
-    if (!canUser(req.user, 'write-post', post)) {
-      throw createError(403, 'You do not have permission to edit this post');
-    }
-    
+    // Extract data from request body
+    const updatedPostData = {
+      title: req.body.title,
+      body: req.body.body,
+      status: req.body.status
+    }; 
+
     // Update post data
     Object.assign(post, updatedPostData);
     await post.save();
@@ -98,24 +98,19 @@ router.put('/:postId', authorize, async (req, res, next) => {
 router.delete('/:postId', authorize, async (req, res, next) => {
   let post;
   try {
+    // Check if current user is author of the post
+    if (!canUser(req.user, 'delete-post', post)) {
+      throw createError(403, 'You do not have permission to delete this post');
+    }
+
     post = await Post.findById(req.params.postId).exec();
 
     if (post === null) {
       throw createError(404, 'Post does not exist');
     }
-
-    // Check if current user is author of the post
-    if (!canUser(req.user, 'delete-post', post)) {
-      throw createError(403, 'You do not have permission to delete this post');
-    }
-  } catch (err) {
-    return next(err);
-  }
-
-  try {
     await post.delete();
   } catch (err) {
-    next(err);
+    return next(err);
   }
 
   res.send('Post is deleted');
