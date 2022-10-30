@@ -30,18 +30,12 @@ router.post('/', authorize, async (req, res, next) => {
     if (!canUser(req.user, 'write-comment')) {
       throw createError(403, 'You are not allowed to write comments');
     }
-
     post = await Post.findById(req.postId);
     if (post === null) {
       throw createError(404, 'Post that is tried to write a comment does not exist');
     }
 
-    const leanComment = {
-      post: post,
-      author: req.user,
-      body: req.body.body
-    };
-    comment = await Comment.create(leanComment)
+    comment = await Comment.create({...req.body, post, author: req.user})
   } catch (err) {
     next(err);
   }
@@ -68,10 +62,7 @@ router.get('/:commentId', async (req, res, next) => {
 router.put('/:commentId', async (req, res, next) => {
   let comment;
   try {
-    const leanComment = {
-      body: req.body.body
-    };
-    comment = await Comment.findByIdAndUpdate(req.params.commentId, leanComment);
+    comment = await Comment.findByIdAndUpdate(req.params.commentId, req.body);
     if (comment === null) {
       throw createError(404, 'Comment does not exist');
     }

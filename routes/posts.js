@@ -28,15 +28,7 @@ router.post('/', authorize, async (req, res, next) => {
     if (!canUser(req.user, 'write-post')) {
       throw createError(403, 'User are not allowed to write posts');
     }
-
-    // Extract data from request body
-    const leanPost = {
-      title: req.body.title,
-      body: req.body.body,
-      author: req.user
-    };
-
-    post = await Post.create(leanPost);
+    post = await Post.create({...req.body, author: req.user});
   } catch (err) {
     return next(err);
   }
@@ -73,16 +65,9 @@ router.put('/:postId', authorize, async (req, res, next) => {
     if (post === null) {
       throw createError(404, 'Post does not exist');
     }
-    
-    // Extract data from request body
-    const updatedPostData = {
-      title: req.body.title,
-      body: req.body.body,
-      status: req.body.status
-    }; 
 
     // Update post data
-    Object.assign(post, updatedPostData);
+    Object.assign(post, req.body);
     await post.save();
   } catch (err) {
     return next(err);
