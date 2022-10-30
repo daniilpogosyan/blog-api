@@ -7,7 +7,7 @@ const commentRouter = require('./comments');
 const Post = require('../models/post');
 const User = require('../models/user');
 
-const { authorize } = require('../accessController');
+const { authorize, canUser } = require('../accessController');
 
 // Get all posts
 router.get('/', async (req, res, next) => {
@@ -23,7 +23,7 @@ router.get('/', async (req, res, next) => {
 
 // Create a new post
 router.post('/', authorize, async (req, res, next) => {
-  if (!req.user.permissions.includes('write-post')) {
+  if (!canUser(req.user, 'write-post')) {
     const err = createError(403, 'User are not allowed to write posts');
     return next(err);
   }
@@ -80,7 +80,7 @@ router.put('/:postId', authorize, async (req, res, next) => {
     }
     
     // Check if current user is author of the post
-    if (!post.author._id.equals(req.user.id)) {
+    if (!canUser(req.user, 'write-post', post)) {
       throw createError(403, 'You do not have permission to edit this post');
     }
     
@@ -105,7 +105,7 @@ router.delete('/:postId', authorize, async (req, res, next) => {
     }
 
     // Check if current user is author of the post
-    if (!post.author._id.equals(req.user._id)) {
+    if (!canUser(req.user, 'delete-post', post)) {
       throw createError(403, 'You do not have permission to delete this post');
     }
   } catch (err) {

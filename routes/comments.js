@@ -7,7 +7,7 @@ const Post = require('../models/post');
 const Comment = require('../models/comment');
 const User = require('../models/user');
 
-const { authorize } = require('../accessController');
+const { authorize, canUser } = require('../accessController');
 
 // Get all comments
 router.get('/', async (req, res, next) => {
@@ -23,7 +23,7 @@ router.get('/', async (req, res, next) => {
 
 // // Create a new comment
 router.post('/', authorize, async (req, res, next) => {
-  if (!req.user.permissions.includes('write-comment')) {
+  if (!canUser(req.user, 'write-comment')) {
     const err = createError(403, 'You are not allowed to write comments');
     return next(err);
   }
