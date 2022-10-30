@@ -13,7 +13,7 @@ const { authorize, canUser } = require('../accessController');
 router.get('/', async (req, res, next) => {
   let comments;
   try {
-    comments = await Comment.find({post: req.postId}).populate('author', 'username').exec();
+    comments = await Comment.find({post: req.postId}).populate('author', 'username');
   } catch (err) {
     next(err);
   }

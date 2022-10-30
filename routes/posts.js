@@ -13,7 +13,7 @@ const { authorize, canUser } = require('../accessController');
 router.get('/', async (req, res, next) => {
   let posts;
   try {
-    posts = await Post.find().populate('author', 'username').exec();
+    posts = await Post.find().populate('author', 'username');
   } catch (err) {
     return next(err);
   }
@@ -48,10 +48,7 @@ router.post('/', authorize, async (req, res, next) => {
 router.get('/:postId', async (req, res, next) => {
   let post;
   try {
-    post = await Post
-      .findById(req.params.postId)
-      .populate('author', 'username')
-      .exec();
+    post = await Post.findById(req.params.postId).populate('author', 'username');
 
     if (post === null)  {
       throw createError(404, 'Post does not exist');
@@ -72,7 +69,7 @@ router.put('/:postId', authorize, async (req, res, next) => {
       throw createError(403, 'You do not have permission to edit this post');
     }
 
-    post = await Post.findById(req.params.postId).exec();
+    post = await Post.findById(req.params.postId);
     if (post === null) {
       throw createError(404, 'Post does not exist');
     }
@@ -103,7 +100,7 @@ router.delete('/:postId', authorize, async (req, res, next) => {
       throw createError(403, 'You do not have permission to delete this post');
     }
 
-    post = await Post.findById(req.params.postId).exec();
+    post = await Post.findById(req.params.postId);
 
     if (post === null) {
       throw createError(404, 'Post does not exist');
