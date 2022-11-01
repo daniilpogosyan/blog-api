@@ -11,9 +11,14 @@ const { authorize, canUser } = require('../accessController');
 
 // Get all posts
 router.get('/', async (req, res, next) => {
+  const query = Post.find();
+  if (req.query.author) {
+    query.where('author').equals(req.query.author);
+  }
+  
   let posts;
   try {
-    posts = await Post.find().populate('author', 'username');
+    posts = await query;
   } catch (err) {
     return next(err);
   }
