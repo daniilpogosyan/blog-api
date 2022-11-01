@@ -63,20 +63,41 @@ router.post('/', authorize, async (req, res, next) => {
 });
 
 // Get a particular post
-router.get('/:postId', async (req, res, next) => {
-  let post;
-  try {
-    post = await Post.findById(req.params.postId).populate('author', 'username');
-
-    if (post === null)  {
-      throw createError(404, 'Post does not exist');
+router.get('/:postId',
+  // Conditional authorization
+  (req, res, next) => {
+    if (req.query.author === 'me') {
+      return authorize(req, res, next);
     }
-  } catch (err) {
-    return next(err);
-  }
+    next();
+  },
+  async (req, res, next) => {
+    const query = Post.findById(req.params.postId);
+    if (req.user.id) {
+      // Search among published documents and documents that belong to the user
+      query.or([
+        { status: 'published' },
+        { author: req.user.id }
+      ])
+    } else {
+      // Search among published documents
+      query.where('status').equals('published');
+    }
 
-  res.json(post);
-});
+    let post;
+    try {
+      post = await query.exec();
+
+      if (post === null)  {
+        throw createError(404, 'Post does not exist');
+      }
+    } catch (err) {
+      return next(err);
+    }
+
+    res.json(post);
+  }
+);
 
 // Update a particular post
 router.put('/:postId', authorize, async (req, res, next) => {
