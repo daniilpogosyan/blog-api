@@ -10,21 +10,42 @@ const User = require('../models/user');
 const { authorize, canUser } = require('../accessController');
 
 // Get all posts
-router.get('/', async (req, res, next) => {
-  const query = Post.find();
-  if (req.query.author) {
-    query.where('author').equals(req.query.author);
-  }
+router.get('/', 
+  // Conditional authorization
+  (req, res, next) => {
+    if (req.query.author === 'me') {
+      return authorize(req, res, next);
+    }
+    next();
+  },
+  async (req, res, next) => {
+    const query = Post.find();
   
-  let posts;
-  try {
-    posts = await query;
-  } catch (err) {
-    return next(err);
-  }
+    if (req.user) {
 
-  res.json(posts);
-});
+      // Get all user's posts
+      query.where('author').equals(req.user.id);
+    } else if (req.query.author) {
+      
+      // Get only published user's posts if not authorized
+      query.where('author').equals(req.query.author);
+      query.where('status').equals('published');
+    } else {
+
+      // Get all published posts
+      query.where('status').equals('published');
+    }
+
+    let posts;
+    try {
+      posts = await query;
+    } catch (err) {
+      return next(err);
+    }
+
+    res.json(posts);
+  }
+);
 
 // Create a new post
 router.post('/', authorize, async (req, res, next) => {
