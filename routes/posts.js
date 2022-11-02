@@ -19,7 +19,7 @@ router.get('/',
     next();
   },
   async (req, res, next) => {
-    const query = Post.find();
+  const query = Post.find().populate('author', 'username');
   
     if (req.user) {
 
@@ -72,7 +72,7 @@ router.get('/:postId',
     next();
   },
   async (req, res, next) => {
-    const query = Post.findById(req.params.postId);
+    const query = Post.findById(req.params.postId).populate('author', 'username');
     if (req.user.id) {
       // Search among published documents and documents that belong to the user
       query.or([
