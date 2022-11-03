@@ -73,7 +73,7 @@ router.get('/:postId',
   },
   async (req, res, next) => {
     const query = Post.findById(req.params.postId).populate('author', 'username');
-    if (req.user.id) {
+    if (req.user) {
       // Search among published documents and documents that belong to the user
       query.or([
         { status: 'published' },
