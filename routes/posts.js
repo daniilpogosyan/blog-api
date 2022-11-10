@@ -36,6 +36,17 @@ router.get('/',
       query.where('status').equals('published');
     }
 
+    // Get document in a requested order
+    if (req.query.sort) {
+      query.sort(req.query.sort);
+    }
+
+    // Get limited number of documents
+    if (req.query.limit) {
+      query.limit(+req.query.limit);
+    }
+
+
     let posts;
     try {
       posts = await query;
