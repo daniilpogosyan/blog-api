@@ -34,6 +34,7 @@ const UserSchema = new mongoose.Schema({
       type: String,
       enum: permissions,
     }],
+    default: ['write-comment'],
     required: true
   }
 });
