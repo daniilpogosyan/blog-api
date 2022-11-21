@@ -70,7 +70,7 @@ router.post('/', authorize, async (req, res, next) => {
     return next(err);
   }
 
-  res.send('Post is created');
+  res.json(post);
 });
 
 // Get a particular post
@@ -131,7 +131,7 @@ router.put('/:postId', authorize, async (req, res, next) => {
     return next(err);
   }
 
-  res.send('Post is updated');
+  res.json(post);
 });
 
 // Delete a particular post
