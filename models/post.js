@@ -4,13 +4,13 @@ const PostSchema = new mongoose.Schema({
   title: {
     type: String,
     required: true,
-    maxLength: 50,
+    maxLength: 300,
     minLength: 3
   },
   body: {
     type: String,
     required: true,
-    maxLength: 500,
+    maxLength: 20000,
     minLength: 30,
   },
   author: {
