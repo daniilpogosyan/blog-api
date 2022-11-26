@@ -11,9 +11,21 @@ const { authorize, canUser } = require('../accessController');
 
 // Get all comments
 router.get('/', async (req, res, next) => {
+  const query = Comment.find({post: req.postId}).populate('author', 'username');
+
+  // Get document in a requested order
+  if (req.query.sort) {
+    query.sort(req.query.sort);
+  }
+
+  // Get limited number of documents
+  if (req.query.limit) {
+    query.limit(+req.query.limit);
+  }
+
   let comments;
   try {
-    comments = await Comment.find({post: req.postId}).populate('author', 'username');
+    comments = await query;
   } catch (err) {
     next(err);
   }
